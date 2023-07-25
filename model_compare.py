@@ -9,7 +9,7 @@ from joblib import dump
 
 df_base = pd.read_csv('../dataset/results2/df_base_new.csv')
 
-features = df_base[df_base.columns[3:19].values]
+features = df_base[df_base.columns[3:18].values]
 target = df_base[['target']]
 target = np.ravel(target)
 

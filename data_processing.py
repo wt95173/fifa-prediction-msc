@@ -190,8 +190,7 @@ df_match_stats = pd.concat([df_home_team_stats, df_away_team_stats.reset_index(d
 
 df_full = pd.concat([df_compare, df_match_stats.reset_index(drop=True)], axis=1, ignore_index=False)
 
-df_full['is_friendly_0'] = np.where(df_full['tournament'] == 'Friendly', 1, 0)
-df_full['is_friendly_1'] = np.where(df_full['tournament'] == 'Friendly', 0, 1)
+df_full['is_friendly'] = np.where(df_full['tournament'] == 'Friendly', 1, 0)
 
 df_full.to_csv('../dataset/results/df_full.csv', index=False)
 
@@ -203,7 +202,7 @@ df_base = df_full[
      'away_rank_mean_l5', 'away_points_mean', 'away_points_mean_l5', 'home_game_points_mean',
      'home_game_points_mean_l5', 'home_game_points_rank_mean', 'home_game_points_rank_mean_l5', 'away_game_points_mean',
      'away_game_points_mean_l5', 'away_game_points_rank_mean', 'away_game_points_rank_mean_l5', 'away_player_dif_mean',
-     'away_player_dif_mean_l5', 'home_player_dif_mean', 'home_player_dif_mean_l5', 'is_friendly_0', 'is_friendly_1']]
+     'away_player_dif_mean_l5', 'home_player_dif_mean', 'home_player_dif_mean_l5', 'is_friendly']]
 
 df_base_no = df_base.dropna()
 

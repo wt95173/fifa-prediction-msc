@@ -149,3 +149,6 @@ def simulation_match2(team1, team2):
         return 1
     else:
         return 0
+
+
+team_16 = []

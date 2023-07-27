@@ -9,11 +9,9 @@ from joblib import dump
 
 df_base = pd.read_csv('../dataset/results2/df_base_new.csv')
 
-features = df_base[df_base.columns[3:18].values]
+features = df_base[df_base.columns[3:19].values]
 target = df_base[['target']]
 target = np.ravel(target)
-
-print(target)
 
 X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=1)
 

@@ -68,14 +68,16 @@ print(selected_features2)
 # Determine the final data to be included
 df_base_new_copy = df_base_new_copy[
     ["date", "home_team", "away_team", 'rank_dif', 'goals_dif', 'goals_l5_dif', 'goals_ano_dif', 'goals_l5_ano_dif',
-     'rank_mean_dif', 'rank_mean_l5_dif', 'points_mean_dif', 'game_points_dif', 'game_points_l5_dif',
+     'rank_mean_dif', 'rank_mean_l5_dif', 'points_mean_dif', "points_mean_l5_dif", 'game_points_dif',
+     'game_points_l5_dif',
      'game_points_rank_dif', "player_dif_mean_dif", "player_dif_mean_l5_dif", 'is_friendly', 'target']]
 
 # Graphing relationships
 df_base_draw = df_base_new_copy.copy()
 
 cols = ['rank_dif', 'goals_dif', 'goals_l5_dif', 'goals_ano_dif', 'goals_l5_ano_dif', 'rank_mean_dif',
-        'rank_mean_l5_dif', 'points_mean_dif', 'game_points_dif', 'game_points_l5_dif', 'game_points_rank_dif',
+        'rank_mean_l5_dif', 'points_mean_dif', "points_mean_l5_dif", 'game_points_dif', 'game_points_l5_dif',
+        'game_points_rank_dif',
         "player_dif_mean_dif", "player_dif_mean_l5_dif", 'is_friendly']
 
 df_base_draw['target'] = df_base_draw['target'].astype('category')

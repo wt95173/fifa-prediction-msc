@@ -1,7 +1,7 @@
 import pandas as pd
 from joblib import load
 
-rf_model = load('../models/rf_model.joblib')
+rf_model = load('../models/sgd_model.joblib')
 df_base = pd.read_csv('../dataset/results2/df_base_new.csv')
 df_team_stats = pd.read_csv('../dataset/results/df_team_stats.csv')
 
@@ -13,8 +13,6 @@ wc_group = {'A': [['Qatar', 0], ['Ecuador', 0], ['Senegal', 0], ['Netherlands', 
             'F': [['Belgium', 0], ['Canada', 0], ['Morocco', 0], ['Croatia', 0]],
             'G': [['Brazil', 0], ['Serbia', 0], ['Switzerland', 0], ['Cameroon', 0]],
             'H': [['Portugal', 0], ['Ghana', 0], ['Uruguay', 0], ['South Korea', 0]]}
-print(wc_group['A'][0][0])
-features = df_base[df_base.columns[3:19].values]
 
 
 def get_data(team_name):
@@ -129,8 +127,15 @@ def simulate(wc_group_data):
 for item in simulate(wc_group).items():
     print(item)
 
+team_16 = {'A': ['Senegal', 'Netherlands'],
+           'B': ['England', 'Iran'],
+           'C': ['Argentina', 'Mexico'],
+           'D': ['France', 'Australia'],
+           'E': ['Spain', 'Japan'],
+           'F': ['Belgium', 'Croatia'],
+           'G': ['Brazil', 'Cameroon'],
+           'H': ['Portugal', 'Uruguay']}
 
-# print(simulate(wc_group))
 
 def simulation_match2(team1, team2):
     home_data = get_data(team1)
@@ -145,10 +150,63 @@ def simulation_match2(team1, team2):
     team1_prob = (prob1[0][0] + prob2[0][1]) / 2
     team2_prob = (prob1[0][1] + prob2[0][0]) / 2
 
+    print(team1, team2, team1_prob, team2_prob)
+
     if team1_prob > team2_prob:
         return 1
     else:
         return 0
 
 
-team_16 = []
+def next_round(matches):
+    next_round_matches = []
+    x1 = ''
+    x2 = ''
+
+    if len(matches) == 1:
+        if simulation_match2(matches[0][0], matches[0][1]) == 1:
+            return matches[0][0]
+        else:
+            return matches[0][1]
+    else:
+        for match in matches:
+            if simulation_match2(match[0], match[1]) == 1:
+                if x1 == '':
+                    x1 = match[0]
+                else:
+                    x2 = match[0]
+            else:
+                if x1 == '':
+                    x1 = match[1]
+                else:
+                    x2 = match[1]
+
+            if x1 != '' and x2 != '':
+                next_round_matches.append((x1, x2))
+                x1 = ''
+                x2 = ''
+
+        return next_round_matches
+
+
+def simulation_final(team_16_data):
+    matches_16 = [(team_16_data['A'][0], team_16_data['B'][1]),
+                  (team_16_data['C'][0], team_16_data['D'][1]),
+                  (team_16_data['E'][0], team_16_data['F'][1]),
+                  (team_16_data['G'][0], team_16_data['H'][1]),
+                  (team_16_data['B'][0], team_16_data['A'][1]),
+                  (team_16_data['D'][0], team_16_data['C'][1]),
+                  (team_16_data['F'][0], team_16_data['E'][1]),
+                  (team_16_data['H'][0], team_16_data['G'][1])]
+    print('16:')
+    matches_8 = next_round(matches_16)
+    print('8:')
+    matches_4 = next_round(matches_8)
+    print('semi-finals')
+    matches_2 = next_round(matches_4)
+    print('finals')
+    champions = next_round(matches_2)
+    return champions
+
+
+print(simulation_final(team_16))

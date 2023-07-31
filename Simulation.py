@@ -1,7 +1,7 @@
 import pandas as pd
 from joblib import load
 
-rf_model = load('../models/sgd_model.joblib')
+rf_model = load('../models/rf_model.joblib')
 df_base = pd.read_csv('../dataset/results2/df_base_new.csv')
 df_team_stats = pd.read_csv('../dataset/results/df_team_stats.csv')
 
@@ -60,9 +60,9 @@ def get_features(home_team, away_team):
     player_dif_mean_dif = home_team["pm"] - away_team["pm"]
     player_dif_mean_l5_dif = home_team["pm_l5"] - away_team["pm_l5"]
 
-    feature = [rank_dif, goals_dif, goals_l5_dif, goals_ano_dif, goals_l5_ano_dif,
-               rank_mean_dif, rank_mean_l5_dif, points_mean_dif, points_mean_l5_dif, game_points_dif,
-               game_points_l5_dif, game_points_rank_dif, game_points_rank_l5_dif, player_dif_mean_dif,
+    feature = [rank_dif, goals_dif, goals_ano_dif, goals_l5_ano_dif,
+               rank_mean_dif, points_mean_dif, points_mean_l5_dif, game_points_dif,
+               game_points_l5_dif, game_points_rank_dif, player_dif_mean_dif,
                player_dif_mean_l5_dif, 1]
 
     return feature
@@ -78,7 +78,7 @@ def simulation_match(team1, team2):
     prob1 = rf_model.predict_proba([features1])
     prob2 = rf_model.predict_proba([features2])
 
-    print(team1, team2)
+    print(team1, 'vs', team2)
 
     if (prob1[0][0] > prob1[0][1] and prob2[0][0] < prob2[0][1]) or (
             prob1[0][0] < prob1[0][1] and prob2[0][0] > prob2[0][1]):
@@ -94,8 +94,29 @@ def simulation_match(team1, team2):
         return 0
 
 
+def simulation_match2(team1, team2):
+    home_data = get_data(team1)
+    away_data = get_data(team2)
+
+    features1 = get_features(home_data, away_data)
+    features2 = get_features(away_data, home_data)
+
+    prob1 = rf_model.predict_proba([features1])
+    prob2 = rf_model.predict_proba([features2])
+
+    team1_prob = (prob1[0][0] + prob2[0][1]) / 2
+    team2_prob = (prob1[0][1] + prob2[0][0]) / 2
+
+    print(team1, 'vs', team2, team1_prob, team2_prob)
+
+    if team1_prob > team2_prob:
+        return 2
+    else:
+        return 0
+
+
 def update_score(wc_group_data, group, team1_idx, team2_idx):
-    result = simulation_match(wc_group_data[group][team1_idx][0], wc_group_data[group][team2_idx][0])
+    result = simulation_match2(wc_group_data[group][team1_idx][0], wc_group_data[group][team2_idx][0])
 
     if result == 2:
         wc_group_data[group][team1_idx][1] += 3
@@ -124,38 +145,27 @@ def simulate(wc_group_data):
     return wc_group_data
 
 
-for item in simulate(wc_group).items():
+wc_group_new = simulate(wc_group)
+for group, teams in wc_group_new.items():
+    sorted_teams = sorted(teams, key=lambda x: x[1], reverse=True)
+    wc_group[group] = sorted_teams
+for item in wc_group_new.items():
     print(item)
 
-team_16 = {'A': ['Senegal', 'Netherlands'],
-           'B': ['England', 'Iran'],
-           'C': ['Argentina', 'Mexico'],
-           'D': ['France', 'Australia'],
-           'E': ['Spain', 'Japan'],
-           'F': ['Belgium', 'Croatia'],
-           'G': ['Brazil', 'Cameroon'],
-           'H': ['Portugal', 'Uruguay']}
+team_16 = {}
+for group, teams in wc_group_new.items():
+    top_two_teams = [team[0] for team in teams[:2]]
+    team_16[group] = top_two_teams
 
 
-def simulation_match2(team1, team2):
-    home_data = get_data(team1)
-    away_data = get_data(team2)
-
-    features1 = get_features(home_data, away_data)
-    features2 = get_features(away_data, home_data)
-
-    prob1 = rf_model.predict_proba([features1])
-    prob2 = rf_model.predict_proba([features2])
-
-    team1_prob = (prob1[0][0] + prob2[0][1]) / 2
-    team2_prob = (prob1[0][1] + prob2[0][0]) / 2
-
-    print(team1, team2, team1_prob, team2_prob)
-
-    if team1_prob > team2_prob:
-        return 1
-    else:
-        return 0
+# team_16 = {'A': ['Senegal', 'Netherlands'],
+#            'B': ['England', 'Iran'],
+#            'C': ['Argentina', 'Mexico'],
+#            'D': ['France', 'Australia'],
+#            'E': ['Spain', 'Japan'],
+#            'F': ['Belgium', 'Croatia'],
+#            'G': ['Brazil', 'Cameroon'],
+#            'H': ['Portugal', 'Uruguay']}
 
 
 def next_round(matches):
@@ -164,13 +174,13 @@ def next_round(matches):
     x2 = ''
 
     if len(matches) == 1:
-        if simulation_match2(matches[0][0], matches[0][1]) == 1:
+        if simulation_match2(matches[0][0], matches[0][1]) == 2:
             return matches[0][0]
         else:
             return matches[0][1]
     else:
         for match in matches:
-            if simulation_match2(match[0], match[1]) == 1:
+            if simulation_match2(match[0], match[1]) == 2:
                 if x1 == '':
                     x1 = match[0]
                 else:

@@ -77,14 +77,74 @@ df_base_draw = df_base_new_copy.copy()
 
 cols = ['rank_dif', 'goals_dif', 'goals_l5_dif', 'goals_ano_dif', 'goals_l5_ano_dif', 'rank_mean_dif',
         'rank_mean_l5_dif', 'points_mean_dif', "points_mean_l5_dif", 'game_points_dif', 'game_points_l5_dif',
-        'game_points_rank_dif',
-        "player_dif_mean_dif", "player_dif_mean_l5_dif", 'is_friendly']
+        'game_points_rank_dif', "player_dif_mean_dif", "player_dif_mean_l5_dif"]  # no 'is_friendly'
 
 df_base_draw['target'] = df_base_draw['target'].astype('category')
 
-# sns.pairplot(df_base_draw[cols], hue="target", markers=["o", "s"])
-# plt.savefig("../pairplot.png")
+plt.figure(figsize=(15, 10))
+correlation_matrix = df_base_draw[cols + ['target']].corr()
+sns.heatmap(correlation_matrix, annot=True)
+plt.xticks(rotation=45)
+plt.savefig(f'../images/correlation_matrix_full.png')
+plt.show()
+
+# Violin diagram
+# for feature in cols:
+#     plt.figure(figsize=(10, 6))
+#     sns.violinplot(x='target', y=feature, data=df_base_draw, split=True)
+#     plt.title(f'{feature} by target category')
+#     plt.savefig(f'../images/violinplot_{feature}.png')
+#     plt.show()
+
+# violin_data = df_base_new_copy.melt(id_vars='target', value_vars=cols, var_name='features', value_name='value')
+# plt.figure(figsize=(12, 10))
+# sns.violinplot(x="features", y="value", hue="target", data=violin_data, split=True, inner="quart")
+# plt.xticks(rotation=45)
+# plt.savefig(f'../images/violinplot_full.png')
 # plt.show()
 
+for feature in cols:
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(x='target', y=feature, data=df_base_draw)
+    plt.title(f'{feature} by target category')
+    plt.savefig(f'../images/boxplot_{feature}.png')
+    plt.show()
+
+box_data = df_base_new_copy.melt(id_vars='target', value_vars=cols, var_name='features', value_name='value')
+plt.figure(figsize=(12, 10))
+sns.boxplot(x="features", y="value", hue="target", data=box_data)
+plt.xticks(rotation=45)
+plt.savefig(f'../images/boxplot_full.png')
+plt.show()
+
+cols2 = ['goals_dif', 'goals_l5_dif', 'goals_ano_dif', 'goals_l5_ano_dif', 'game_points_dif', 'game_points_l5_dif']
+box_data2 = df_base_new_copy.melt(id_vars='target', value_vars=cols2, var_name='features', value_name='value')
+plt.figure(figsize=(12, 10))
+sns.boxplot(x="features", y="value", hue="target", data=box_data2)
+plt.xticks(rotation=45)
+plt.savefig(f'../images/boxplot_full2.png')
+plt.show()
+
+sns.scatterplot(data=df_base_draw, x='goals_dif', y='goals_l5_dif', hue='target')
+plt.savefig('../images/scatterplot_goals_dif_goals_l5_dif.png')
+plt.show()
+
+sns.scatterplot(data=df_base_draw, x='rank_mean_dif', y='rank_mean_l5_dif', hue='target')
+plt.savefig('../images/scatterplot_rank_mean_dif_rank_mean_l5_dif.png')
+plt.show()
+
+sns.scatterplot(data=df_base_draw, x='goals_dif', y='goals_ano_dif', hue='target')
+plt.savefig('../images/scatterplot_goals_dif_goals_ano_dif.png')
+plt.show()
+
+sns.scatterplot(data=df_base_draw, x='rank_dif', y='points_mean_dif', hue='target')
+plt.savefig('../images/scatterplot_rank_dif_points_mean_dif.png')
+plt.show()
+
 # Saving of processed data
-df_base_new_copy.to_csv('../dataset/results2/df_base_new.csv', index=False)
+df_base_new_final = df_base_new_copy[
+    ["date", "home_team", "away_team", 'rank_dif', 'goals_dif', 'goals_ano_dif', 'goals_l5_ano_dif',
+     'rank_mean_dif', 'points_mean_dif', "points_mean_l5_dif", 'game_points_dif',
+     'game_points_l5_dif', 'game_points_rank_dif', "player_dif_mean_dif", "player_dif_mean_l5_dif", 'is_friendly',
+     'target']]
+df_base_new_final.to_csv('../dataset/results2/df_base_new.csv', index=False)

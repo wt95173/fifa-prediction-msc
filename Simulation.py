@@ -1,10 +1,11 @@
 import pandas as pd
 from joblib import load
 
-rf_model = load('../models/rf_model.joblib')
+rf_model = load('../models/sgd_model.joblib')
 df_base = pd.read_csv('../dataset/results2/df_base_new.csv')
 df_team_stats = pd.read_csv('../dataset/results/df_team_stats.csv')
 
+# Setting the World Cup Finalists
 wc_group = {'A': [['Qatar', 0], ['Ecuador', 0], ['Senegal', 0], ['Netherlands', 0]],
             'B': [['England', 0], ['Iran', 0], ['United States', 0], ['Wales', 0]],
             'C': [['Argentina', 0], ['Saudi Arabia', 0], ['Mexico', 0], ['Poland', 0]],
@@ -15,6 +16,7 @@ wc_group = {'A': [['Qatar', 0], ['Ecuador', 0], ['Senegal', 0], ['Netherlands', 
             'H': [['Portugal', 0], ['Ghana', 0], ['Uruguay', 0], ['South Korea', 0]]}
 
 
+# Processing of finalist team data
 def get_data(team_name):
     past_games = df_team_stats.query('team == @team_name').sort_values(by='date', ascending=False)
     last5 = past_games.head(5)
@@ -68,6 +70,7 @@ def get_features(home_team, away_team):
     return feature
 
 
+# Match simulation for the group stage
 def simulation_match(team1, team2):
     home_data = get_data(team1)
     away_data = get_data(team2)
@@ -94,6 +97,7 @@ def simulation_match(team1, team2):
         return 0
 
 
+# Knockout stage match simulation
 def simulation_match2(team1, team2):
     home_data = get_data(team1)
     away_data = get_data(team2)
@@ -115,6 +119,7 @@ def simulation_match2(team1, team2):
         return 0
 
 
+# Updated group stage results
 def update_score(wc_group_data, group, team1_idx, team2_idx):
     result = simulation_match2(wc_group_data[group][team1_idx][0], wc_group_data[group][team2_idx][0])
 
@@ -127,6 +132,7 @@ def update_score(wc_group_data, group, team1_idx, team2_idx):
         wc_group_data[group][team2_idx][1] += 1
 
 
+# Generate group stage matches
 def generate_matches_in_group(group):
     n = len(group)
     matches = []
@@ -136,6 +142,7 @@ def generate_matches_in_group(group):
     return matches
 
 
+# Overall simulation
 def simulate(wc_group_data):
     for group, teams in wc_group_data.items():
         matches = generate_matches_in_group(teams)
@@ -145,6 +152,7 @@ def simulate(wc_group_data):
     return wc_group_data
 
 
+# Get the final group stage results by points
 wc_group_new = simulate(wc_group)
 for group, teams in wc_group_new.items():
     sorted_teams = sorted(teams, key=lambda x: x[1], reverse=True)
@@ -152,6 +160,7 @@ for group, teams in wc_group_new.items():
 for item in wc_group_new.items():
     print(item)
 
+# Getting the knockout list
 team_16 = {}
 for group, teams in wc_group_new.items():
     top_two_teams = [team[0] for team in teams[:2]]
@@ -168,6 +177,7 @@ for group, teams in wc_group_new.items():
 #            'H': ['Portugal', 'Uruguay']}
 
 
+# Simulation of the next fixture in the knockout phase
 def next_round(matches):
     next_round_matches = []
     x1 = ''
@@ -199,6 +209,7 @@ def next_round(matches):
         return next_round_matches
 
 
+# Overall prediction for the knockout rounds
 def simulation_final(team_16_data):
     matches_16 = [(team_16_data['A'][0], team_16_data['B'][1]),
                   (team_16_data['C'][0], team_16_data['D'][1]),
